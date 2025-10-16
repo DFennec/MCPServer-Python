@@ -23,17 +23,18 @@ async def make_poke_request(url: str) -> dict[str, Any] | None:
         except Exception:
             return None
 
-def format_pokemon_moves(moves: dict) -> str:
-    """Formats a pokemon JSON into a readable string."""
-    i=0
-    s=""
-    while moves[i].get('move','unknown')!='unknown':
-        props = moves[i]
-        s=s+f"""
-Move: {props.get('name', 'Unknown')}
-Url: {props.get('url', 'Unknown')}\n
+def format_pokemon_moves(move_entry: dict[str, Any]) -> str:
+    """Formats a single move entry JSON into a readable string."""
+    
+    props = move_entry.get('move', {}) 
+
+    name = props.get('name', 'Unknown')
+    url = props.get('url', 'Unknown')
+    
+    return f"""
+Move: {name.replace('-', ' ').title()} 
+Url: {url}
 """
-    return s
 
 @mcp.tool()
 async def get_moves(pokemon: str) -> str:
@@ -51,11 +52,12 @@ async def get_moves(pokemon: str) -> str:
     if not data["moves"]:
         return "No moves for this pokemon."
 
-    alerts = [format_pokemon_moves(moves) for moves in data["moves"]]
-    return "\n---\n".join(alerts)
+    moveset = [format_pokemon_moves(move_entry) for move_entry in data["moves"]] 
+    return "\n---\n".join(moveset)
 
 def main():
     # Initialize and run the server
+    print("Success: Running.\nNow open Claude and search in your Claude tools.")
     mcp.run(transport='stdio')
 
 if __name__ == "__main__":
